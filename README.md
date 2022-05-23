@@ -1,6 +1,6 @@
 # etcd-demo
 
-etcd 各种使用方法 demo
+etcd-demo 代码用例
 
 ## 安装
 
