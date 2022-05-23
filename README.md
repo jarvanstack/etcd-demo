@@ -35,7 +35,9 @@ etcd 各种使用方法 demo
 
 
 
-参考 main_test.go 把所有测试全部跑通没有报错就行
+修改 main_test.go  的etcd集群配置
+
+然后把所有 example_**_test.go 测试全部跑通没有报错就行
 
 
 
