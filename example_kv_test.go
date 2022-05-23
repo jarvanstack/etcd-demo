@@ -65,25 +65,6 @@ func TestKV_Delete(t *testing.T) {
 		log.Fatal(err)
 	}
 }
-func TestKV_Watch(t *testing.T) {
-	//watch
-	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
-	//开一个协程进行增加和删除操作
-	go func() {
-		for i := 0; i < 3; i++ {
-			cli.Put(ctx, "/k1", "v1")
-			time.Sleep(time.Second)
-			cli.Delete(ctx, "/k1")
-		}
-	}()
-	watchKey := cli.Watch(ctx, "/k1")
-	for resp := range watchKey {
-		for _, e := range resp.Events {
-			fmt.Printf("%s %q : %q\n", e.Type, e.Kv.Key, e.Kv.Value)
-		}
-	}
-	cancel()
-}
 
 //事务 transaction
 func TestKV_Txn(t *testing.T) {
@@ -92,8 +73,8 @@ func TestKV_Txn(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	_, err := kvc.Txn(ctx).
 		If(clientv3.Compare(clientv3.CreateRevision("/k1"), "=", 0)).
-		Then(clientv3.OpPut("/k1", "不存在")).
-		Else(clientv3.OpPut("/k1", "存在")).
+		Then(clientv3.OpPut("/k1", "不存在的情况设置值")).
+		Else(clientv3.OpPut("/k1", "存在的情况设置值")).
 		Commit()
 	cancel()
 	if err != nil {
@@ -110,35 +91,4 @@ func TestKV_Txn(t *testing.T) {
 	}
 }
 
-/*
-Grant：分配一个租约。
-Revoke：释放一个租约。
-TimeToLive：获取剩余TTL时间。
-Leases：列举所有etcd中的租约。
-KeepAlive：自动定时的续约某个租约。
-KeepAliveOnce：为某个租约续约一次。
-Close：关闭当前客户端建立的所有租约。
-*/
-func Test_Lease(t *testing.T) {
-	ctx, _ := context.WithTimeout(context.Background(), requestTimeout)
-
-	kv := clientv3.NewKV(cli)
-
-	//分配一个3秒的租约
-	lease, err := cli.Grant(ctx, 3)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//put并给到租约
-	kv.Put(ctx, "/k2", "一个3秒的租约", clientv3.WithLease(lease.ID))
-
-	//睡眠4秒让租约过期
-	time.Sleep(4 * time.Second)
-	resp, _ := kv.Get(ctx, "/k2")
-	if resp.Count == 1 {
-		fmt.Printf("%s\n", "1.没有过期")
-	} else {
-		fmt.Printf("%s\n", "2.过期了")
-	}
-}
+//watch
