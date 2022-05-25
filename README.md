@@ -20,7 +20,6 @@ etcd-demo 代码用例
 
 2.下载可执行文件TODO
 
-## etcdctl todo
 
 
 
